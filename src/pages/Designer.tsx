@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,34 +5,59 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Palette } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { EditRequests } from '@/components/EditRequests';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 const Designer = () => {
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [projectId, setProjectId] = useState<string | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const navigate = useNavigate();
+  const { profile, loading } = useUserProfile(user);
 
   useEffect(() => {
-    const storedRole = localStorage.getItem('userRole');
-    const storedProjectId = localStorage.getItem('projectId');
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/onboarding');
+        return;
+      }
+      setUser(session.user);
+    };
 
-    if (!storedRole || !storedProjectId || storedRole !== 'designer') {
-      // Redirect to onboarding if not properly set up
-      navigate('/onboarding');
-      return;
-    }
+    getSession();
 
-    setUserRole(storedRole);
-    setProjectId(storedProjectId);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_OUT' || !session) {
+          navigate('/onboarding');
+        } else {
+          setUser(session.user);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('projectId');
-    navigate('/onboarding');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
-  if (!userRole || !projectId) {
-    return null; // Will redirect in useEffect
+  if (loading || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-pink-50">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (profile.role !== 'designer') {
+    navigate('/onboarding');
+    return null;
   }
 
   return (
@@ -47,25 +71,29 @@ const Designer = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Designer Panel</h1>
-              <p className="text-muted-foreground">Project: {projectId}</p>
+              <p className="text-muted-foreground">Project: {profile.project_id}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <Badge variant="secondary">Designer</Badge>
             <Button variant="outline" onClick={handleLogout}>
-              Switch Project
+              Logout
             </Button>
           </div>
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue="requests" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="requests">Requests</TabsTrigger>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="designs">Designs</TabsTrigger>
-            <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="assets">Assets</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="requests" className="space-y-6">
+            <EditRequests profile={profile} />
+          </TabsContent>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -121,21 +149,21 @@ const Designer = () => {
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <div className="flex-1">
                       <div className="text-sm font-medium">Logo design approved</div>
-                      <div className="text-xs text-muted-foreground">Project {projectId} • 2 hours ago</div>
+                      <div className="text-xs text-muted-foreground">Project {profile.project_id} • 2 hours ago</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <div className="flex-1">
                       <div className="text-sm font-medium">New wireframes uploaded</div>
-                      <div className="text-xs text-muted-foreground">Project {projectId} • 5 hours ago</div>
+                      <div className="text-xs text-muted-foreground">Project {profile.project_id} • 5 hours ago</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     <div className="flex-1">
                       <div className="text-sm font-medium">Client feedback received</div>
-                      <div className="text-xs text-muted-foreground">Project {projectId} • 1 day ago</div>
+                      <div className="text-xs text-muted-foreground">Project {profile.project_id} • 1 day ago</div>
                     </div>
                   </div>
                 </div>
@@ -165,39 +193,6 @@ const Designer = () => {
                     <div className="w-full h-32 bg-gradient-to-br from-pink-100 to-orange-100 rounded mb-3"></div>
                     <div className="text-sm font-medium">Brand Guidelines</div>
                     <div className="text-xs text-muted-foreground">Updated 3 days ago</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="feedback" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Client Feedback</CardTitle>
-                <CardDescription>Review and respond to client comments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-medium">Sarah M.</div>
-                      <Badge variant="outline">Pending</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Love the color scheme! Could we try a slightly bolder font for the headlines?
-                    </p>
-                    <div className="text-xs text-muted-foreground">2 hours ago</div>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-medium">John D.</div>
-                      <Badge variant="secondary">Resolved</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      The mobile layout looks perfect. Great work on the responsive design!
-                    </p>
-                    <div className="text-xs text-muted-foreground">1 day ago</div>
                   </div>
                 </div>
               </CardContent>

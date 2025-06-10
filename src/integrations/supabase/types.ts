@@ -15,6 +15,7 @@ export type Database = {
           id: string
           message: string
           page_url: string
+          project_id: string
           replies: Json | null
           section_id: string | null
           status: string
@@ -26,6 +27,7 @@ export type Database = {
           id?: string
           message: string
           page_url: string
+          project_id?: string
           replies?: Json | null
           section_id?: string | null
           status?: string
@@ -37,6 +39,7 @@ export type Database = {
           id?: string
           message?: string
           page_url?: string
+          project_id?: string
           replies?: Json | null
           section_id?: string | null
           status?: string
