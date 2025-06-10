@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { User, Palette } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Onboarding = () => {
   const [selectedRole, setSelectedRole] = useState<'client' | 'designer' | null>(null);
@@ -14,19 +15,28 @@ const Onboarding = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user has already completed onboarding
-    const storedRole = localStorage.getItem('userRole');
-    const storedProjectId = localStorage.getItem('projectId');
-    
-    if (storedRole && storedProjectId) {
-      // Redirect based on stored role
-      if (storedRole === 'client') {
-        navigate('/client');
-      } else if (storedRole === 'designer') {
-        navigate('/designer');
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Get user profile to redirect based on role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile) {
+          if (profile.role === 'designer') {
+            window.location.href = 'https://preview--elementor-request-buddy.lovable.app/';
+          } else {
+            window.location.href = 'https://preview--section-edit-whisper.lovable.app/';
+          }
+        }
       }
-    }
-  }, [navigate]);
+    };
+    checkAuth();
+  }, []);
 
   const handleContinue = () => {
     if (!selectedRole || !projectId.trim()) {
@@ -35,21 +45,13 @@ const Onboarding = () => {
 
     setIsLoading(true);
 
-    // Store in localStorage
-    localStorage.setItem('userRole', selectedRole);
-    localStorage.setItem('projectId', projectId.trim());
-
-    // Simulate a brief loading state for better UX
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Navigate based on role
-      if (selectedRole === 'client') {
-        navigate('/client');
-      } else {
-        navigate('/designer');
+    // Navigate to auth page with role and project ID as state
+    navigate('/auth', {
+      state: {
+        selectedRole,
+        projectId: projectId.trim()
       }
-    }, 800);
+    });
   };
 
   const isFormValid = selectedRole && projectId.trim().length > 0;
@@ -131,7 +133,7 @@ const Onboarding = () => {
               {isLoading ? (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Setting up...</span>
+                  <span>Continue...</span>
                 </div>
               ) : (
                 'Continue'
@@ -142,7 +144,7 @@ const Onboarding = () => {
 
         <div className="text-center mt-6">
           <p className="text-xs text-muted-foreground">
-            Your preferences will be saved locally for future visits
+            Next, you'll create an account to secure your access
           </p>
         </div>
       </div>
