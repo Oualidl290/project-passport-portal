@@ -36,7 +36,14 @@ export const useUserProfile = (user: User | null) => {
           console.error('Error fetching profile:', error);
           setError(error.message);
         } else {
-          setProfile(data);
+          const typedProfile: UserProfile = {
+            id: data.id,
+            role: data.role as 'client' | 'designer',
+            project_id: data.project_id,
+            created_at: data.created_at,
+            updated_at: data.updated_at
+          };
+          setProfile(typedProfile);
         }
       } catch (err) {
         console.error('Error fetching profile:', err);
