@@ -1,13 +1,12 @@
-
 import { Palette, MessageCircle } from 'lucide-react';
 
 const Index = () => {
   const handleDesignerClick = () => {
-    window.location.href = 'https://id-preview--9c55cb82-eec6-4de1-8329-5ca26d2f6e8d.lovable.app/auth';
+    window.location.href = 'https://elementor-request-buddy.vercel.app/';
   };
 
   const handleClientClick = () => {
-    window.location.href = 'https://preview--section-edit-whisper.lovable.app/auth';
+    window.location.href = 'https://section-edit-whisper.vercel.app/auth';
   };
 
   return (
