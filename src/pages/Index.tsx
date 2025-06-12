@@ -6,7 +6,7 @@ const Index = () => {
   };
 
   const handleClientClick = () => {
-    window.location.href = 'https://section-edit-whisper.vercel.app/auth';
+    window.location.href = 'https://section-edit-whisper.vercel.app';
   };
 
   return (
