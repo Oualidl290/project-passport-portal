@@ -1,11 +1,28 @@
 import { Palette, MessageCircle } from 'lucide-react';
 
 const Index = () => {
+  const handleRoleSelection = (selectedRole: 'client' | 'designer') => {
+    // Save role in localStorage
+    localStorage.setItem('lefCurrentRole', selectedRole);
+    
+    // Notify WordPress
+    window.postMessage({ 
+      type: 'lef-role-selected', 
+      role: selectedRole,
+      source: 'lovable-passport' 
+    }, '*');
+
+    // For testing: Log the action
+    console.log(`Role selected: ${selectedRole}`);
+  };
+
   const handleDesignerClick = () => {
+    handleRoleSelection('designer');
     window.location.href = 'https://elementor-request-buddy.vercel.app/';
   };
 
   const handleClientClick = () => {
+    handleRoleSelection('client');
     window.location.href = 'https://section-edit-whisper.vercel.app';
   };
 
