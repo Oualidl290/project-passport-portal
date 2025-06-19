@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { MessageCircle, Upload, Send, X } from 'lucide-react';
 import { Button } from './ui/button';
@@ -53,13 +52,13 @@ export const CommentSystem: React.FC<CommentSystemProps> = ({
       const filePath = `comments/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('comment-images')
+        .from('comment-screenshots')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('comment-images')
+        .from('comment-screenshots')
         .getPublicUrl(filePath);
 
       return data.publicUrl;
