@@ -1,6 +1,11 @@
+
 import { Palette, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const navigate = useNavigate();
+
   const handleRoleSelection = (selectedRole: 'client' | 'designer') => {
     // Save role in localStorage
     localStorage.setItem('lefCurrentRole', selectedRole);
@@ -24,6 +29,10 @@ const Index = () => {
   const handleClientClick = () => {
     handleRoleSelection('client');
     window.location.href = 'https://section-edit-whisper.vercel.app';
+  };
+
+  const handleDemoClick = () => {
+    navigate('/comments');
   };
 
   return (
@@ -85,6 +94,31 @@ const Index = () => {
                 </h2>
                 <p className="text-sm text-gray-600 leading-relaxed">
                   Request changes and review designer responses
+                </p>
+              </div>
+              <div className="text-gray-400 group-hover:text-gray-600 transition-colors duration-200">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Demo Card */}
+          <div
+            onClick={handleDemoClick}
+            className="group cursor-pointer transition-all duration-200 hover:scale-[1.02]"
+          >
+            <div className="bg-white/80 backdrop-blur-sm border border-orange-200/60 rounded-2xl p-6 shadow-sm hover:shadow-md hover:bg-white/90 transition-all duration-200 flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">
+                  Try Comment Demo
+                </h2>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  See the new visual commenting system in action
                 </p>
               </div>
               <div className="text-gray-400 group-hover:text-gray-600 transition-colors duration-200">
